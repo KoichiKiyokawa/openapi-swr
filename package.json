@@ -2,7 +2,8 @@
 	"name": "@kiyoshiro/openapi-swr-monorepo",
 	"version": "1.0.0",
 	"scripts": {
-		"lint": "biome check"
+		"lint": "biome check",
+		"test": "cd packages/sandbox && bun run test"
 	},
 	"workspaces": ["packages/*"],
 	"devDependencies": {

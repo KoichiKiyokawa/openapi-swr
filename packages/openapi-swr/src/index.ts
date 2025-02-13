@@ -135,7 +135,6 @@ export default function createHooks<
 			tags,
 			mapResponseData = (d) => d,
 			mapResponseError = (e) => e,
-			...options
 		}: {
 			tags?: string[];
 			mapResponseData?: (data: Data) => MappedData;
