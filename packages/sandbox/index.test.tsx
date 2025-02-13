@@ -28,11 +28,6 @@ const BASE_URL = "http://localhost:3000";
 const client = createClient<paths>({ baseUrl: BASE_URL });
 const { useQuery, useQueryInfinite, useMutation } = createHooks(client);
 
-function Main() {
-	const mutation = useMutation("post", "/users", {});
-	mutation.trigger({ body: {} });
-}
-
 const cache = new Map();
 afterEach(() => {
 	cache.clear();

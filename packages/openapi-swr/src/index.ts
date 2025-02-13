@@ -99,6 +99,7 @@ export default function createHooks<
 	) {
 		return useSWRInfinite<MappedData, MappedError>(
 			(pageIndex, previousPageData) => {
+				if (pause) return null;
 				if (Array.isArray(previousPageData) && previousPageData.length === 0)
 					return null;
 
