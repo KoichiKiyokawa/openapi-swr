@@ -1,0 +1,19 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: jdx/mise-action@v2
+      - run: bun i --frozen-lockfile
+      - run: cd packages/sandbox && bun run codegen
+      - run: bun run lint
+      - run: bun run type-check
+      - run: bun run test

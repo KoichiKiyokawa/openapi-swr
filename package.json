@@ -3,7 +3,8 @@
 	"version": "1.0.0",
 	"scripts": {
 		"lint": "biome check",
-		"test": "cd packages/sandbox && bun run test"
+		"test": "cd packages/sandbox && bun run test",
+		"type-check": "tsc --noEmit"
 	},
 	"workspaces": ["packages/*"],
 	"devDependencies": {

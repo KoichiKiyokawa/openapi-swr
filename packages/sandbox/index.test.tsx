@@ -1,5 +1,9 @@
 import createHooks from "@kiyoshiro/openapi-swr";
-import { render, renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
+import camelcaseKeys from "camelcase-keys";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import createClient from "openapi-fetch";
 import {
 	afterAll,
 	afterEach,
@@ -9,13 +13,8 @@ import {
 	it,
 	vi,
 } from "vitest";
-import camelcaseKeys from "camelcase-keys";
-import { http, HttpResponse } from "msw";
-import createClient from "openapi-fetch";
-import type { paths } from "./types/__generated";
-import { mutate, SWRConfig } from "swr";
-import { setupServer } from "msw/node";
 import { sleep } from "./test-util";
+import type { paths } from "./types/__generated";
 
 const server = setupServer();
 
