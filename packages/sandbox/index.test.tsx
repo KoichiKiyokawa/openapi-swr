@@ -1,5 +1,5 @@
 import createHooks from "@kiyoshiro/openapi-swr";
-import { renderHook, waitFor } from "@testing-library/react";
+import { render, renderHook, waitFor } from "@testing-library/react";
 import {
 	afterAll,
 	afterEach,
@@ -13,13 +13,13 @@ import camelcaseKeys from "camelcase-keys";
 import { http, HttpResponse } from "msw";
 import createClient from "openapi-fetch";
 import type { paths } from "./types/__generated";
-import { SWRConfig } from "swr";
+import { mutate, SWRConfig } from "swr";
 import { setupServer } from "msw/node";
 import { sleep } from "./test-util";
 
 const server = setupServer();
 
-// モックサーバーを開始・停止
+// start and stop the mock server
 beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
@@ -33,12 +33,9 @@ afterEach(() => {
 	cache.clear();
 });
 
-const renderHookWithDisableCache = <T,>(fn: () => T) =>
-	renderHook(fn, {
-		wrapper: ({ children }) => (
-			<SWRConfig value={{ provider: () => cache }}>{children}</SWRConfig>
-		),
-	});
+beforeAll(() => {
+	vi.spyOn(console, "error").mockImplementation(() => {});
+});
 
 describe("useQuery", () => {
 	it("with success response", async () => {
@@ -50,7 +47,7 @@ describe("useQuery", () => {
 			}),
 		);
 
-		const { result, rerender } = renderHookWithDisableCache(() =>
+		const { result, rerender } = renderHook(() =>
 			useQuery("get", "/users", {
 				params: { query: { page: 0, per: 10 } },
 				mapResponseData: camelcaseKeys,
@@ -71,8 +68,8 @@ describe("useQuery", () => {
 		await sleep(100);
 		expect(requestUrlSpy).toHaveBeenCalledTimes(1);
 
-		// should not hit cache
-		renderHookWithDisableCache(() =>
+		// should not hit cache because `page` query param is different
+		renderHook(() =>
 			useQuery("get", "/users", {
 				params: { query: { page: 1, per: 10 } },
 				mapResponseData: camelcaseKeys,
@@ -88,16 +85,23 @@ describe("useQuery", () => {
 	it("with error response", async () => {
 		server.use(
 			http.get("**/users", () => {
-				return HttpResponse.json({ error_detail: "foo" }, { status: 500 });
+				return HttpResponse.json({ error_detail: "foo" }, { status: 400 });
 			}),
 		);
 
-		const { result } = renderHookWithDisableCache(() =>
-			useQuery("get", "/users", {
-				params: { query: { page: 0, per: 10 } },
-				mapResponseError: camelcaseKeys,
-				tags: ["users"],
-			}),
+		const { result } = renderHook(() =>
+			useQuery(
+				"get",
+				"/users",
+				{
+					params: { query: { page: 10, per: 10 } },
+					mapResponseError: camelcaseKeys,
+					tags: ["users"],
+				},
+				{
+					shouldRetryOnError: false,
+				},
+			),
 		);
 
 		await waitFor(() =>
@@ -117,7 +121,7 @@ describe("useQueryInfinite", () => {
 			}),
 		);
 
-		const { result, rerender } = renderHookWithDisableCache(() =>
+		const { result, rerender } = renderHook(() =>
 			useQueryInfinite(
 				"get",
 				"/users",
@@ -159,17 +163,22 @@ describe("useQueryInfinite", () => {
 	it("with error response", async () => {
 		server.use(
 			http.get("**/users", () => {
-				return HttpResponse.json({ error_detail: "foo" }, { status: 500 });
+				return HttpResponse.json({ error_detail: "foo" }, { status: 400 });
 			}),
 		);
 
-		const { result } = renderHookWithDisableCache(() =>
-			useQueryInfinite("get", "/users", {
-				getParams(pageIndex, _previousPageData) {
-					return { query: { per: 10, page: pageIndex } };
+		const { result } = renderHook(() =>
+			useQueryInfinite(
+				"get",
+				"/users",
+				{
+					getParams(pageIndex, _previousPageData) {
+						return { query: { per: 100, page: pageIndex } };
+					},
+					mapResponseError: camelcaseKeys,
 				},
-				mapResponseError: camelcaseKeys,
-			}),
+				{ shouldRetryOnError: false },
+			),
 		);
 
 		await waitFor(() =>
@@ -188,7 +197,7 @@ describe("useMutation", () => {
 			}),
 		);
 
-		const { result } = renderHookWithDisableCache(() =>
+		const { result } = renderHook(() =>
 			useMutation("post", "/users", { mapResponseData: camelcaseKeys }),
 		);
 
@@ -209,12 +218,12 @@ describe("useMutation", () => {
 			}),
 		);
 
-		const { result } = renderHookWithDisableCache(() =>
-			useMutation("post", "/users", {}),
+		const { result } = renderHook(() =>
+			useMutation("post", "/users", { mapResponseError: camelcaseKeys }),
 		);
 
 		await waitFor(async () =>
-			expect(await result.current.trigger({ body: {} })).toStrictEqual({
+			expect(() => result.current.trigger({ body: {} })).rejects.toStrictEqual({
 				errorDetail: "foo",
 			}),
 		);
