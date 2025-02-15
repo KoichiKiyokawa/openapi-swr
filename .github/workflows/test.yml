@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: jdx/mise-action@v2
       - run: bun i --frozen-lockfile
       - run: cd packages/sandbox && bun run codegen
