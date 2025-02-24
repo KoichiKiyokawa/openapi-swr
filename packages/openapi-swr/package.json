@@ -9,7 +9,7 @@
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
-	"packageManager": "pnpm@10.3.0",
+	"packageManager": "pnpm@10.4.1",
 	"dependencies": {
 		"openapi-fetch": "^0.13.4",
 		"openapi-typescript-helpers": "^0.0.15",
