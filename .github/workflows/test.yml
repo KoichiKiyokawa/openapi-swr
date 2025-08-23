@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@v3
       - run: bun i --frozen-lockfile
       - run: cd packages/sandbox && bun run codegen
       - run: bun run lint
