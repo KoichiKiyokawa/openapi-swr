@@ -20,6 +20,6 @@
 		"happy-dom": "17.1.0",
 		"msw": "2.7.0",
 		"openapi-typescript": "7.6.1",
-		"vitest": "3.0.5"
+		"vitest": "4.1.11"
 	}
 }
